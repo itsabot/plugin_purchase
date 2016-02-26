@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/itsabot/abot/shared/datatypes"
 	"github.com/itsabot/abot/shared/language"
+	"github.com/itsabot/abot/shared/log"
 	"github.com/itsabot/abot/shared/nlp"
 	"github.com/itsabot/abot/shared/pkg"
 	"github.com/itsabot/abot/shared/task"
@@ -28,7 +28,7 @@ var db *sqlx.DB
 var ec *dt.SearchClient
 var p *pkg.Pkg
 var sm *dt.StateMachine
-var l *log.Entry
+var l *log.Logger
 
 // m enables the Run() function to skip to the FollowUp function if basic
 // requirements are met.
@@ -66,13 +66,12 @@ func main() {
 	flag.StringVar(&coreaddr, "coreaddr", "",
 		"Port used to communicate with Abot.")
 	flag.Parse()
-	log.SetLevel(log.DebugLevel)
-	l = log.WithFields(log.Fields{"pkg": pkgName})
+	l = log.New(pkgName)
 	rand.Seed(time.Now().UnixNano())
 	var err error
 	db, err = pkg.ConnectDB()
 	if err != nil {
-		l.Fatalln(err)
+		l.Fatal(err)
 	}
 	ec = dt.NewSearchClient()
 	trigger := &nlp.StructuredInput{
@@ -81,7 +80,7 @@ func main() {
 	}
 	p, err = pkg.NewPackage(pkgName, coreaddr, trigger)
 	if err != nil {
-		l.Fatalln("building", err)
+		l.Fatal("building", err)
 	}
 	p.Vocab = dt.NewVocab(
 		dt.VocabHandler{
@@ -149,16 +148,16 @@ func main() {
 		[]dt.State{
 			{
 				OnEntry: func(in *dt.Msg) string {
-					l.Debugln("onentry")
+					l.Debug("onentry")
 					return "Are you looking for a red or white? We can also find sparkling wines or rose."
 				},
 				OnInput: func(in *dt.Msg) {
-					l.Debugln("oninput")
+					l.Debug("oninput")
 					c := extractWineCategory(in.Sentence)
 					sm.SetMemory(in, "category", c)
 				},
 				Complete: func(in *dt.Msg) (bool, string) {
-					l.Debugln("complete")
+					l.Debug("complete")
 					return sm.HasMemory(in, "category"), ""
 				},
 			},
@@ -174,7 +173,7 @@ func main() {
 					s := in.StructuredInput.Objects.
 						String() + " wine"
 					sm.SetMemory(in, "taste", s)
-					l.Debugln("set taste to", s)
+					l.Debug("set taste to", s)
 				},
 				Complete: func(in *dt.Msg) (bool, string) {
 					return sm.HasMemory(in, "taste"), ""
@@ -192,7 +191,7 @@ func main() {
 					}
 					u := uint64(val.Int64)
 					sm.SetMemory(in, "budget", u)
-					l.Debugln("set budget to", u)
+					l.Debug("set budget to", u)
 				},
 				Complete: func(in *dt.Msg) (bool, string) {
 					return sm.HasMemory(in, "budget"), ""
@@ -201,17 +200,17 @@ func main() {
 			{
 				//Label: "recommendations",
 				OnEntry: func(in *dt.Msg) string {
-					log.Println("recs on entry")
 					q := sm.GetMemory(in, "taste").String()
-					log.Println("taste", q)
 					cat := sm.GetMemory(in, "category").String()
-					log.Println("category", cat)
 					bdg := sm.GetMemory(in, "budget").Int64()
-					log.Println("budget", bdg)
+					l.Debug("found taste:", q)
+					l.Debug("found category:", cat)
+					l.Debug("found budget:", bdg)
 					results, err := ec.FindProducts(q, cat,
 						"alcohol", uint64(bdg))
 					if err != nil {
-						l.Errorln("findproducts", err)
+						l.Debug("could not find products", err)
+						return ""
 					}
 					var s string
 					if len(results) == 0 {
@@ -227,9 +226,8 @@ func main() {
 					sm.SetMemory(in, "recommendations", results)
 					if len(results) > 0 {
 						tmp, err := recommendProduct(in, &results[0])
-						l.Debugln("here end")
 						if err != nil {
-							l.Errorln(err)
+							l.Debug("could not recommend product", err)
 							return ""
 						}
 						return s + tmp
@@ -239,7 +237,6 @@ func main() {
 				},
 				OnInput: func(in *dt.Msg) {
 					// was the recommendation Abot made good?
-					log.Println("recs on input")
 					yes := language.ExtractYesNo(in.Sentence)
 					if !yes.Valid {
 						return
@@ -259,12 +256,13 @@ func main() {
 					mem := sm.GetMemory(in, "selected_products")
 					err := json.Unmarshal(mem.Val, prods)
 					if err != nil {
-						l.Errorln("unmarshaling selected products", err)
+						l.Debug("could not get selected products", err)
+						return
 					}
 					recs := getRecommendations(in)
 					offset := int(sm.GetMemory(in, "offset").Int64())
 					if len(recs) <= offset {
-						l.Errorln("recs shorter than offset")
+						l.Debug("recs shorter than offset")
 						return
 					}
 					prods = append(prods, recs[offset])
@@ -273,7 +271,6 @@ func main() {
 				},
 				// NOTE everything below this point is a WIP
 				Complete: func(in *dt.Msg) (bool, string) {
-					log.Println("recs complete")
 					if sm.HasMemory(in, "selected_products") {
 						if sm.HasMemory(in, "selection_finished") {
 							return true, ""
@@ -348,7 +345,7 @@ func main() {
 	sm.SetDBConn(db)
 	sm.SetLogger(l)
 	sm.SetOnReset(func(in *dt.Msg) {
-		l.Debugln("resetting")
+		l.Debug("resetting")
 		sm.SetMemory(in, "query", "")
 		sm.SetMemory(in, "category", "")
 		sm.SetMemory(in, "budget", "")
@@ -361,7 +358,7 @@ func main() {
 	})
 	purchase := new(Purchase)
 	if err := p.Register(purchase); err != nil {
-		l.Fatalln("registering", err)
+		l.Fatal("registering", err)
 	}
 }
 
@@ -448,20 +445,19 @@ func recommendProduct(in *dt.Msg, p *dt.Product) (string, error) {
 }
 
 func removeSelectedProduct(in *dt.Msg, name string) {
-	l.WithField("product", name).Infoln("removing from cart")
+	l.Debug("removing", name, "from cart")
 	prods := getSelectedProducts(in)
 	var success bool
 	for i, prod := range prods {
 		if name == prod.Name {
 			m.State["productsSelected"] = append(prods[:i],
 				prods[i+1:]...)
-			l.WithField("product", name).Debugln(
-				"removed from cart")
+			l.Info("removed", name, "from cart")
 			success = true
 		}
 	}
 	if !success {
-		l.WithField("name", name).Errorln("failed to remove")
+		l.Debug("could not remove", name, "from cart")
 	}
 }
 
@@ -522,7 +518,6 @@ func kwPrice(in *dt.Msg, _ int) string {
 }
 
 func kwSearch(in *dt.Msg, _ int) string {
-	l.Debugln("hit kwSearch")
 	sm.SetMemory(in, "offset", 0)
 	sm.SetMemory(in, "query", in.StructuredInput.Objects.String())
 	cat := extractWineCategory(in.Sentence)
@@ -638,7 +633,6 @@ func kwHelp(_ *dt.Msg, _ int) string {
 }
 
 func kwStop(_ *dt.Msg, _ int) string {
-	l.Debugln("hit kwStop")
 	return "Ok."
 }
 
@@ -647,7 +641,7 @@ func getSelectedProducts(in *dt.Msg) dt.ProductSels {
 	mem := sm.GetMemory(in, "selected_products")
 	err := json.Unmarshal(mem.Val, &prods)
 	if err != nil {
-		l.Errorln("getSelectedProducts", err)
+		l.Debug("could not get selected products", err)
 	}
 	return prods
 }
@@ -656,7 +650,7 @@ func getRecommendations(in *dt.Msg) []dt.Product {
 	prods := []dt.Product{}
 	mem := sm.GetMemory(in, "recommendations")
 	if err := json.Unmarshal(mem.Val, &prods); err != nil {
-		l.Errorln("getRecommendations", err)
+		l.Debug("could not get recommendations", err)
 	}
 	return prods
 }
@@ -665,7 +659,7 @@ func getShippingAddress(in *dt.Msg) *dt.Address {
 	addr := dt.Address{}
 	mem := sm.GetMemory(in, "shipping_address")
 	if err := json.Unmarshal(mem.Val, &addr); err != nil {
-		l.Errorln("getRecommendations", err)
+		l.Debug("could not get shipping address", err)
 	}
 	return &addr
 }
