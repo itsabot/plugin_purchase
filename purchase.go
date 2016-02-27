@@ -25,7 +25,8 @@ type Purchase string
 var ErrEmptyRecommendations = errors.New("empty recommendations")
 var vocab dt.Vocab
 var db *sqlx.DB
-var ec *dt.SearchClient
+
+//var ec *dt.SearchClient
 var p *pkg.Pkg
 var sm *dt.StateMachine
 var l *log.Logger
@@ -73,7 +74,7 @@ func main() {
 	if err != nil {
 		l.Fatal(err)
 	}
-	ec = dt.NewSearchClient()
+	//ec = dt.NewSearchClient()
 	trigger := &nlp.StructuredInput{
 		Commands: language.Purchase(),
 		Objects:  language.Alcohol(),
@@ -206,34 +207,35 @@ func main() {
 					l.Debug("found taste:", q)
 					l.Debug("found category:", cat)
 					l.Debug("found budget:", bdg)
-					results, err := ec.FindProducts(q, cat,
-						"alcohol", uint64(bdg))
-					if err != nil {
-						l.Debug("could not find products", err)
-						return ""
-					}
-					var s string
-					if len(results) == 0 {
-						// TODO
-						/*
+					return "TODO: not implemented"
+					/*
+						results, err := ec.FindProducts(q, cat,
+							"alcohol", uint64(bdg))
+						if err != nil {
+							l.Debug("could not find products", err)
+							return ""
+						}
+						var s string
+						if len(results) == 0 {
+							// TODO
 							q, cat, bdg = fixSearchParams(q, cat,
 								bdg)
 							results = ec.FindProducts(q, cat,
 								"alcohol", bdg)
 							s = "Here's the closest I could find. "
-						*/
-					}
-					sm.SetMemory(in, "recommendations", results)
-					if len(results) > 0 {
-						tmp, err := recommendProduct(in, &results[0])
-						if err != nil {
-							l.Debug("could not recommend product", err)
-							return ""
 						}
-						return s + tmp
-					} else {
-						return "I couldn't find anything like that."
-					}
+						sm.SetMemory(in, "recommendations", results)
+						if len(results) > 0 {
+							tmp, err := recommendProduct(in, &results[0])
+							if err != nil {
+								l.Debug("could not recommend product", err)
+								return ""
+							}
+							return s + tmp
+						} else {
+							return "I couldn't find anything like that."
+						}
+					*/
 				},
 				OnInput: func(in *dt.Msg) {
 					// was the recommendation Abot made good?
@@ -400,10 +402,13 @@ func recommendProduct(in *dt.Msg, p *dt.Product) (string, error) {
 	}
 	tmp := fmt.Sprintf("A %s%s for $%.2f. ", product.Name, size,
 		float64(product.Price)/100)
-	summary, err := language.Summarize(&product, "products_alcohol")
-	if err != nil {
-		return "", err
-	}
+	summary := "todo: summary"
+	/*
+		summary, err := language.Summarize(&product, "products_alcohol")
+		if err != nil {
+			return "", err
+		}
+	*/
 	tmp += summary + " "
 	r := rand.Intn(2)
 	switch r {
