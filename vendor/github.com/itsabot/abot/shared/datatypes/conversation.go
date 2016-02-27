@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/itsabot/abot/shared/log"
 	"github.com/itsabot/abot/shared/nlp"
 	"github.com/jmoiron/sqlx"
 )
@@ -71,14 +72,16 @@ func GetMsg(db *sqlx.DB, id uint64) (*Msg, error) {
 }
 
 // Update marks a message as needing training and notifies trainers.
-func (m *Msg) Update(db *sqlx.DB, mc *MailClient) error {
+func (m *Msg) Update(db *sqlx.DB /*, mc *MailClient */) error {
 	q := `UPDATE messages
 	      SET needstraining=$1
 	      WHERE id=$2`
 	if _, err := db.Exec(q, m.NeedsTraining, m.ID); err != nil {
 		return err
 	}
-	return mc.SendTrainingNotification(db, m)
+	// TODO use email driver
+	// return mc.SendTrainingNotification(db, m)
+	return nil
 }
 
 func (m *Msg) Save(db *sqlx.DB) error {
@@ -107,7 +110,7 @@ func (m *Msg) GetLastRoute(db *sqlx.DB) (string, error) {
 
 /*
 func (m *Msg) GetLastUserMessage(db *sqlx.DB) error {
-	log.Debugln("getting last input")
+	log.Debug("getting last input")
 	q := `SELECT id, sentence FROM messages
 	      WHERE userid=$1 AND avasent IS FALSE
 	      ORDER BY createdat DESC`
@@ -137,7 +140,6 @@ func (m *Msg) NewResponse() *Resp {
 */
 
 func (m *Msg) GetLastMsg(db *sqlx.DB) (*Msg, error) {
-	log.Debugln("getting last response")
 	if m.User == nil {
 		return nil, ErrMissingUser
 	}
@@ -147,13 +149,11 @@ func (m *Msg) GetLastMsg(db *sqlx.DB) (*Msg, error) {
 	      ORDER BY createdat DESC`
 	row := db.QueryRowx(q, m.User.ID)
 	var msg Msg
-	log.Debugln("scanning into response")
 	err := row.StructScan(&msg)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	if err != nil {
-		log.Debug("structscan row ", err)
 		return nil, err
 	}
 	msg.User = m.User
@@ -165,16 +165,13 @@ func (m *Msg) GetLastState(db *sqlx.DB) error {
 	q := `SELECT state FROM states WHERE pkgname=$1`
 	err := db.Get(&state, q, m.Package)
 	if err == sql.ErrNoRows {
-		log.Error("WTF NO STATE FOUND for pkg", m.Package)
-		return nil
+		return errors.New("missing state for package")
 	}
 	if err != nil {
-		log.Error(err, "WTF", m.Package)
 		return err
 	}
 	err = json.Unmarshal(state, &m.State)
 	if err != nil {
-		log.Debug("unmarshaling state", err)
 		return err
 	}
 	return nil
@@ -252,10 +249,6 @@ func addContext(db *sqlx.DB, m *Msg) (*Msg, error) {
 		default:
 			return m, errors.New("unknown type found for pronoun")
 		}
-		log.WithFields(log.Fields{
-			"fn":  "addContext",
-			"ctx": ctx,
-		}).Infoln("context found")
 	}
 	return m, nil
 }
@@ -263,7 +256,6 @@ func addContext(db *sqlx.DB, m *Msg) (*Msg, error) {
 // getContextObject retrieves actors, places, etc. from prior messages
 func getContextObject(db *sqlx.DB, u *User, si *nlp.StructuredInput,
 	datatype string) (string, error) {
-	log.Debugln("getting object context")
 	var tmp *nlp.StringSlice
 	if u == nil {
 		return "", ErrMissingUser

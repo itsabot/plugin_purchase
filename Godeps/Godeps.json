@@ -6,49 +6,36 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.9.0-15-g219c8cb",
-			"Rev": "219c8cb75c258c552e999735be6df753ffc7afdc"
-		},
-		{
-			"ImportPath": "github.com/araddon/gou",
-			"Rev": "1fd0868458fb611a8a956fae0ed0d0cc657cd321"
-		},
-		{
-			"ImportPath": "github.com/bitly/go-hostpool",
-			"Rev": "d0e59c22a56e8dadfed24f74f452cea5a52722d2"
-		},
-		{
 			"ImportPath": "github.com/dchest/stemmer",
 			"Rev": "f1ab276e6cf5fad3f8db813f22e25b1939c8ef70"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/datatypes",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/helpers/address",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/language",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/log",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/nlp",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/pkg",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/task",
-			"Rev": "1177ae18031203ca14b1d9fbf8bfcd3de8e1752b"
+			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
 		},
 		{
 			"ImportPath": "github.com/jmoiron/sqlx",
@@ -76,11 +63,6 @@
 			"Rev": "8ad2b298cadd691a77015666a5372eae5dbfac8f"
 		},
 		{
-			"ImportPath": "github.com/mattbaird/elastigo/lib",
-			"Comment": "v1.0-308-g6846107",
-			"Rev": "6846107dcb6b61f78681686b1d6b27787aa8f881"
-		},
-		{
 			"ImportPath": "github.com/mattn/go-colorable",
 			"Rev": "9cbef7c35391cca05f15f8181dc0b18bc9736dbb"
 		},
@@ -92,16 +74,6 @@
 			"ImportPath": "github.com/renstrom/fuzzysearch/fuzzy",
 			"Comment": "v1.0.0",
 			"Rev": "d4ca9dfccd55dc6b076f9880d49c35315922c1f4"
-		},
-		{
-			"ImportPath": "github.com/sendgrid/sendgrid-go",
-			"Comment": "v2.0.0-18-g618ae01",
-			"Rev": "618ae01fc450f11509a8dee37756036780338593"
-		},
-		{
-			"ImportPath": "github.com/sendgrid/smtpapi-go",
-			"Comment": "v0.4.0",
-			"Rev": "08102729bcf72bfe74dde6c0da8e0423e94090ca"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
