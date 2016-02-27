@@ -11,31 +11,31 @@
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/datatypes",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/helpers/address",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/language",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/log",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/nlp",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/pkg",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/itsabot/abot/shared/task",
-			"Rev": "487d6d7906cbdb7ba609d56ba4f989640c7f0900"
+			"Rev": "3d2a074359207dfe1cb9cf1aebee05b4510dd9e2"
 		},
 		{
 			"ImportPath": "github.com/jmoiron/sqlx",
